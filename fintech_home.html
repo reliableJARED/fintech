@@ -1,0 +1,39 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>financial analysis</title>
+
+        <meta http-equiv="Content-Type" name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+
+        <script src="http://mozilla.github.io/pdf.js/build/pdf.js"></script>
+        <script src="http://mozilla.github.io/pdf.js/build/pdf.worker.js"></script>
+
+        <!-- v2 -->
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/2.1.2/tesseract.min.js'></script>
+
+        
+		<link rel="icon" href="data:,"> <!-- stop favicon request -->
+        <meta charset="utf-8">
+        <style>
+        #drop_zone {
+            border: 5px solid blue;
+            width:  200px;
+            height: 100px;
+          }
+        </style>
+        
+		<div id="drop_zone" ondrop="FileDropHandler(event)" ondragover="dragOverHandler(event)" ondragleave="dragLeave(event)">
+            <p>Drag one or more files to this Drop Zone ...</p>
+        </div>
+
+        <button id="ready_to_submit">Done</button>
+        <!--  <a id="download">Download</a>  -->
+
+        <canvas id="canvas" style="border: 1px solid black; direction: ltr;"></canvas>
+
+		<script src="fintech.js"></script><!-- KEEP AT BOTTOM -->
+
+	</body>
+</html>
+
