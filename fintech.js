@@ -5,11 +5,11 @@ load pdf files
 second
 read pdf file
 
-second
+third
 convert pdf files to images
 
-third
-use tesseract.js 
+fourth
+use tesseract.js to analyze image text
 */
 
 //
@@ -74,34 +74,101 @@ function dragOverHandler(f) {
 
 
 
-document.getElementById("ready_to_submit").addEventListener("click", createFileURLs);
+document.getElementById("ready_to_submit").addEventListener("click", clickHandlerSubmit);
 
 //STEP ONE
 //loop through all of the pdf files user uploaded and prepare to present on canvas
-function createFileURLs(){
-    for (const prop in FILES){
-        console.log(FILES[prop]);
-        // Send the object url of the pdf to canvas shower function
-       // showPDF(URL.createObjectURL(FILES[prop]));
-
-        FILES[prop]["pages"] = [];
-        let fileURL = URL.createObjectURL(FILES[prop]);
-        addPagesToFile(fileURL,FILES[prop]);
-    }
-//////////////////////////
-// NEED TO WAIT - stepTwo is called and FILES[prop].pages is an empty array still.
-////////////////////////
-    stepTwo()
+function clickHandlerSubmit(){
+    t_createFileURLs()
+    t_addPagesToFile()
+    /*
+    createFileURLs()
+    .then(()=>{
+        //must have the delay as part of the .then() chanin for it to apply
+        return delay(stepTwo);
+    })
+    .catch((e)=>{console.log(e)})
+    */
 }
 
+function t_createFileURLs(){
+    let numProps = Object.keys(FILES).length
+    for(const prop in FILES){
+        // convert the pdf URL to a loaded pdf, the associate the pages with Files[prop]
+        FILES[prop]["pages"] = [];
+        let fileURL = URL.createObjectURL(FILES[prop]);
+        FILES[prop]["fileURL"] - fileURL;
+    }
+}
+
+function t_addPagesToFile(){
+    //https://github.com/mozilla/pdf.js/blob/master/examples/learning/helloworld.html
+    
+    for(const prop in FILES){
+        let loadingTask = pdfjsLib.getDocument(FILES[prop].fileURL)
+
+        loadingTask.promise.then(function(pdf) {
+            
+            for(let n = 0; n < pdf.numPages; n++){
+                ((n)=>{
+                    setTimeout(() => {
+                        console.log(n)
+                        FILES[prop].pages[n] = pdf.getPage(n+1).catch((e)=>console.log(e,n))
+                    }, n*200);
+                })(n);
+            }
+        })
+        .catch((error) =>{
+            console.log(error);
+        });
+    }
+}
+
+
+function createFileURLs(){
+    
+    console.log('createFileURLs');
+
+    return new Promise((resolve,reject)=>{ 
+        for (const prop in FILES){
+            // convert the pdf URL to a loaded pdf, the associate the pages with Files[prop]
+            FILES[prop]["pages"] = [];
+            let fileURL = URL.createObjectURL(FILES[prop]);
+            addPagesToFile(fileURL,FILES[prop]);
+        }
+        resolve()
+        reject(new Error());
+    })
+}
+
+
+/* delay used in waiting for loads
+https://stackoverflow.com/questions/39538473/using-settimeout-on-promise-chain
+ */
+function delay(CalledAfterDelay) {
+    return new Promise(() =>{ 
+        console.log('delay')
+        setTimeout(CalledAfterDelay,1000)
+    });
+ }
+
 function stepTwo(){
+    console.log('stepTwo');
+
+        for (const prop in FILES){
+            FILES[prop].pages.forEach((page)=>{
+                return delay(pdfPageRender(page))
+            })
+        }
     //now that FILES has pdfs and their pages, need to start rendering
     //the issue is that rendering takes time and the best solution right now is setTimeout()
     /*
-    see this page as example
+    see this page as example for delay
     https://madhavpalshikar.medium.com/javascript-how-to-wait-in-for-loop-6a4894d6335d
-    */
+    https://stackoverflow.com/questions/39538473/using-settimeout-on-promise-chain
 
+    */
+/*
     console.log(FILES)
    
     for (const prop in FILES){
@@ -109,16 +176,15 @@ function stepTwo(){
         processPages(FILES[prop].pages)
    }
 
-    return null;
+    return 1;
+    */
 }
 
-function delayAfterRender(){
-   return new Promise(()=>{ resolve => setTimeout(resolve, 1000)})
- }
+
  
  /* processing function */
 async function pageRunner(page){
-    await delayAfterRender();
+    await delay();
     pdfPageRender(page);
 }
 
@@ -144,9 +210,9 @@ function addPagesToFile(pdf_url,FILE_prop){
 
     loadingTask.promise.then(function(pdf) {
         
-        for(let n = 1; n < pdf.numPages; n++){
-            FILE_prop.pages[n] = pdf.getPage(n)
-            .catch((e)=>console.log(e))
+        for(let n = 0; n < pdf.numPages; n++){
+            FILE_prop.pages[n] = pdf.getPage(n+1)
+            .catch((e)=>console.log(e,n))
         }
         
     })
@@ -158,6 +224,7 @@ function addPagesToFile(pdf_url,FILE_prop){
 }
 
 function pdfPageRender(page){
+    console.log(page)
     let scale = 1.5;
     let viewport = page.getViewport({ scale: scale, });
         
